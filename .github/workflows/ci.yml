@@ -1,0 +1,68 @@
+name: CI/CD pipeline 
+on:
+push:
+  branches:["main"]
+pull_request:
+  branches:["main"]
+
+jobs:
+  build:
+    name: Build & Analyze
+    runs-on: ubuntu-lastest
+    steps: 
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Flutter
+        uses: subsito/flutter-action@v2
+        with:
+          flutter-version: 3.35.7
+          channel: stable
+          cache: true 
+      - name: Instalacion de dependencias
+        run: flutter pub get
+      - name: Analisis de codigo
+        run: flutter analyze
+  test:
+  name: Pruebas unitarias
+  run-on: ubuntu-lastest
+  needs: build # Epaera a que se ejecute build
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Setup Flutter
+      uses: subsito/flutter-action@v2
+      with:
+        flutter-version: 3.35.7
+        channel: stable
+        cache: true 
+    - name: Instalacion de dependencias
+      run: flutter pub get
+    - name: Ejecutar pruebas unitarias
+      run: flutter test --coverage
+  astifact:
+    name: Construcccion del apk
+    runs-on: ubuntu-lastest
+    needs: test # Espera a que se ejecute test
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup Flutter
+        uses: subsito/flutter-action@v2
+        with:
+          flutter-version: 3.35.7
+          channel: stable
+          cache: true 
+      - name: Instalacion de dependencias
+        run: flutter pub get
+      - name: Construccion del APK
+        run: flutter build apk --release
+      - name: Subir apk
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-release.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+
+      
+
+
